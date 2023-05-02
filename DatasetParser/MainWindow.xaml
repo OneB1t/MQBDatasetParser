@@ -1,0 +1,28 @@
+﻿<Window x:Class="DatasetParser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DatasetParser"
+        mc:Ignorable="d"
+        Title="Binary Data Window" Height="1024" Width="1024">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+            <Button x:Name="loadFileButton" Content="Load File" Click="loadFileButton_Click" />
+            <Button x:Name="saveFileButton" Content="Save File" Click="saveFileButton_Click" />
+            <TextBlock x:Name="filePathTextBlock" Margin="5,0" VerticalAlignment="Center" />
+            <TextBlock x:Name="crc32calculation" Margin="5,0" VerticalAlignment="Center" />
+
+        </StackPanel>
+
+        <TextBox x:Name="binaryDataTextBox" Grid.Row="1" TextWrapping="Wrap" AcceptsReturn="True" Margin="5"
+                 SelectionChanged="binaryDataTextBox_SelectionChanged" IsReadOnly="false" IsReadOnlyCaretVisible="True" />
+
+        <TextBlock x:Name="selectedByteTextBlock" Margin="431,5,10,15" />
+    </Grid>
+</Window>
