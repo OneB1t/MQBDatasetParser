@@ -24,7 +24,7 @@
                 <TextBox FontFamily="consolas" x:Name="sw_version" VerticalAlignment="Center" IsEnabled="True"/>
                 <TextBox x:Name="crc32calculation" Margin="5,0" VerticalAlignment="Center" IsEnabled="True"/>
                 <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock"/>
-                <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock2"/>
+                <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock2" Visibility="Collapsed"/>
             <Button x:Name="compareFilesButton" Content="Compare Files" Click="compareFilesButton_Click" />
             <ScrollViewer>
             <StackPanel Orientation="Horizontal">

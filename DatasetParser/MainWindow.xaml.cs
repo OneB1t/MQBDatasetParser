@@ -128,7 +128,7 @@ namespace DatasetParser
             {
                 sb.Append(input[i]);
 
-                if ((i + 1) % 128 == 0)
+                if ((i + 1) % 100 == 0)
                 {
                     sb.AppendLine();
                 }
