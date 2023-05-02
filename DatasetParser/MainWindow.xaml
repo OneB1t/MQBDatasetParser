@@ -14,28 +14,29 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
             <Button x:Name="loadFileButton" Content="Load File" Click="loadFileButton_Click" />
             <Button x:Name="loadFileButton2" Content="Load Second File" Click="loadFileButton2_Click" />
-            <Button x:Name="saveFileButton" Content="Save File" Click="saveFileButton_Click" />
+            <Button x:Name="saveFileButton" Content="Save File and fix checksum" Click="saveFileButton_Click" />
             <TextBox x:Name="filePathTextBlock" Margin="5,0" VerticalAlignment="Center" IsEnabled="True"/>
             <TextBox x:Name="filePathTextBlock2" Margin="5,0" VerticalAlignment="Center" IsEnabled="True"/>
             </StackPanel>
             <StackPanel Grid.Row="1" Orientation="Vertical" >
-                <TextBox FontFamily="consolas" x:Name="start_address" VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBox FontFamily="consolas" x:Name="diagnostics_address" VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBox FontFamily="consolas" x:Name="start_address" VerticalAlignment="Center" IsEnabled="True"/>
                 <TextBox FontFamily="consolas" x:Name="sw_name"  VerticalAlignment="Center" IsEnabled="True"/>
                 <TextBox FontFamily="consolas" x:Name="sw_version" VerticalAlignment="Center" IsEnabled="True"/>
-                <TextBox x:Name="crc32calculation" Margin="5,0" VerticalAlignment="Center" IsEnabled="True"/>
+                <TextBox FontFamily="consolas" x:Name="vehicle_type" VerticalAlignment="Center" IsEnabled="True"/>
+                <TextBox FontFamily="consolas" x:Name="traffic_jam_assist_enabled" VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBox x:Name="crc32calculation" Margin="5,0" VerticalAlignment="Center" IsEnabled="True"/>
                 <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock"/>
                 <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock2" Visibility="Collapsed"/>
             <Button x:Name="compareFilesButton" Content="Compare Files" Click="compareFilesButton_Click" />
-            <ScrollViewer>
-            <StackPanel Orientation="Horizontal">
-                <TextBox FontFamily="consolas" x:Name="binaryDataTextBox" TextWrapping="Wrap" AcceptsReturn="True" MaxHeight="400"
+
+                    <TextBox FontFamily="consolas" x:Name="binaryDataTextBox" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" IsReadOnlyCaretVisible="True"
+         ScrollViewer.VerticalScrollBarVisibility="Auto" Width="Auto" MaxHeight="500"
                      SelectionChanged="binaryDataTextBox_SelectionChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />
-                <TextBox FontFamily="consolas" x:Name="binaryDataTextBox2" TextWrapping="Wrap" AcceptsReturn="True" MaxWidth="500" MaxHeight="1000" Visibility="Collapsed"
+                    <TextBox FontFamily="consolas" x:Name="binaryDataTextBox2" TextWrapping="Wrap" AcceptsReturn="True" Visibility="Collapsed" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+         ScrollViewer.VerticalScrollBarVisibility="Auto" Width="Auto" IsReadOnlyCaretVisible="True"
                      SelectionChanged="binaryDataTextBox2_SelectionChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />
-                    
-                </StackPanel>
-               
-            </ScrollViewer>
+   
             <diffplex:DiffViewer x:Name="DiffView"/>
             <TextBlock x:Name="differencesTextBlock" FontFamily="consolas" Margin="5" />
         </StackPanel>

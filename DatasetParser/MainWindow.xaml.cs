@@ -1,21 +1,11 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.IO;
-using System.Threading.Tasks.Dataflow;
 using System.Windows;
 using System.Xml.Serialization;
 using System.Xml;
 using Xml2CSharp;
 using System.Text;
-using System.Linq;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections;
-using DiffPlex;
-using DiffPlex.DiffBuilder.Model;
-using DiffPlex.Model;
-using DiffPlex.Chunkers;
-using DiffPlex.Wpf.Controls;
 
 namespace DatasetParser
 {
@@ -24,6 +14,8 @@ namespace DatasetParser
     /// </summary>
     public partial class MainWindow : Window
     {
+        XmlDocument xmlDoc;
+        byte[] datasetBytes;
         public MainWindow()
         {
             InitializeComponent();
@@ -37,7 +29,7 @@ namespace DatasetParser
                 try
                 {
                     // Load the XML file into an XmlDocument object
-                    XmlDocument xmlDoc = new XmlDocument();
+                    xmlDoc = new XmlDocument();
                     xmlDoc.Load(openFileDialog.FileName);
 
                     // Deserialize the XML document into a Response object using an XmlSerializer
@@ -50,11 +42,13 @@ namespace DatasetParser
 
                     // Display the binary data in the TextBox
                     binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(","," ");
+                    start_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.START_ADDRESS;
+                    diagnostics_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.DIAGNOSTIC_ADDRESS;
                     sw_name.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_NAME;
                     sw_version.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_VERSION;
 
                     string[] hexValuesSplit = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Split(',');
-                    byte[] datasetBytes = new byte[hexValuesSplit.Length];
+                    datasetBytes = new byte[hexValuesSplit.Length];
 
     
 
@@ -71,7 +65,10 @@ namespace DatasetParser
 
                     // Set the file path text
                     filePathTextBlock.Text = openFileDialog.SafeFileName;
-                    this.DataContext = this;
+
+                    // here parse data from dataset into fields
+                    GetVehicleType();
+                    GetTrafficJamAssistEnabled();
                 }
                 catch (Exception ex)
                 {
@@ -100,15 +97,6 @@ namespace DatasetParser
                         response = serializer.Deserialize(reader) as MESSAGE;
                     }
                     binaryDataTextBox2.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ");
-                    string[] hexValuesSplit = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Split(',');
-                    byte[] datasetBytes = new byte[hexValuesSplit.Length];
-
- 
-
-                    for (int i = 0; i < hexValuesSplit.Length; i++)
-                    {
-                        datasetBytes[i] = Convert.ToByte(hexValuesSplit[i], 16);
-                    }
 
                     // Set the file path text
                     filePathTextBlock2.Text = openFileDialog.SafeFileName;
@@ -120,6 +108,126 @@ namespace DatasetParser
                 }
             }
         }
+
+        private string GetVehicleType()
+        {
+            short shortValue = BitConverter.ToInt16(datasetBytes, 0);
+            switch(shortValue)
+            {
+                case 12593:
+                    vehicle_type.Text = "Passat Limo GTE";
+                    break;
+                case 14384:
+                    vehicle_type.Text = "Passat Limo";
+                    break;
+                case 12337:
+                    vehicle_type.Text = "Passat Combi XC/HC / Allroad";
+                    break;
+                case 12849:
+                    vehicle_type.Text = "Passat Combi GTE / Variant";
+                    break;
+                case 12851:
+                    vehicle_type.Text = "A3 hatchback";
+                    break;
+                case 14640:
+                    vehicle_type.Text = "Passat Combi GTE";
+                    break;
+                case 12850:
+                    vehicle_type.Text = "Atlas";
+                    break;
+                case 13363:
+                    vehicle_type.Text = "A3 limo";
+                    break;
+                case 13875:
+                    vehicle_type.Text = "A3 sportsback";
+                    break;
+                case 14386:
+                    vehicle_type.Text = "VW Arteon";
+                    break;
+                case 14387:
+                    vehicle_type.Text = "Seat Ateca";
+                    break;
+                case 16689:
+                    vehicle_type.Text = "VW Golf Hatchback";
+                    break;
+                case 20529:
+                    vehicle_type.Text = "VW Golf Hatchback A8T / R";
+                    break;
+                case 17969:
+                    vehicle_type.Text = "VW Golf Variant";
+                    break;
+                case 18225:
+                    vehicle_type.Text = "VW Golf Variant A8T / R";
+                    break;
+                case 14646:
+                    vehicle_type.Text = "Škoda Kodiaq";
+                    break;
+                case 13108:
+                    vehicle_type.Text = "Seat Leon 5-door";
+                    break;
+                case 12854:
+                    vehicle_type.Text = "Škoda Octavia hatchback";
+                    break;
+                case 13366:
+                    vehicle_type.Text = "Škoda Octavia hatchback RS";
+                    break;
+                case 13878:
+                    vehicle_type.Text = "Škoda Octavia Scout";
+                    break;
+                case 13110:
+                    vehicle_type.Text = "Škoda Octavia Variant (combi)";
+                    break;
+                case 13622:
+                    vehicle_type.Text = "Škoda Octavia Variant RS (combi)";
+                    break;
+                case 12598:
+                    vehicle_type.Text = "Škoda Superb Combi";
+                    break;
+                case 12342:
+                    vehicle_type.Text = "Škoda Superb Limo";
+                    break;
+                case 13361:
+                    vehicle_type.Text = "VW Tiguan";
+                    break;
+                case 21553:
+                    vehicle_type.Text = "VW Tiguan XL";
+                    break;
+                case 13617:
+                    vehicle_type.Text = "VW Touran";
+                    break;
+                case 13106:
+                    vehicle_type.Text = "VW T-Roc";
+                    break;
+                case 14649:
+                    vehicle_type.Text = "AUDI A3 / Q2";
+                    break;
+                case 25922:
+                    vehicle_type.Text = "VW Caddy";
+                    break;
+                case 12599:
+                    vehicle_type.Text = "Škoda Karoq";
+                    break;
+                case 12852:
+                    vehicle_type.Text = "Seat Leon 3-door";
+                    break;
+                case 13364:
+                    vehicle_type.Text = "Seat Leon ST";
+                    break;
+                case 16945:
+                    vehicle_type.Text = "VW Golf Sportsvan";
+                    break;
+                default:
+                    vehicle_type.Text = "NO IDEA";
+                    break;
+            }
+
+            return "NO IDEA";
+        }
+        private void GetTrafficJamAssistEnabled()
+        {
+            // we need to decide where to look for it based on unit type as on older type offset is 13868
+            traffic_jam_assist_enabled.Text = "Traffic Jam assist (WIP) only new unit: " + BitConverter.ToBoolean(datasetBytes, 13748);
+        }
         private string AddLinesToResult(string input)
         {
             StringBuilder sb = new StringBuilder();
@@ -128,7 +236,7 @@ namespace DatasetParser
             {
                 sb.Append(input[i]);
 
-                if ((i + 1) % 100 == 0)
+                if ((i + 1) % 192 == 0)
                 {
                     sb.AppendLine();
                 }
@@ -148,11 +256,10 @@ namespace DatasetParser
         {
             // Create a SaveFileDialog object
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "All files (*.*)|*.*"; // Set the file type filter
+            saveFileDialog.Filter = "XML Files (*.xml)|*.xml"; // Set the file type filter
             if (saveFileDialog.ShowDialog() == true) // Show the dialog and check if a file is selected
             {
-                // Write the content of the binaryDataTextBox to the selected file
-                File.WriteAllText(saveFileDialog.FileName, binaryDataTextBox.Text);
+                xmlDoc.Save(saveFileDialog.FileName);
             }
         }
         private void binaryDataTextBox_SelectionChanged(object sender, RoutedEventArgs e)
