@@ -33,12 +33,20 @@
                     <TextBox FontFamily="consolas" x:Name="binaryDataTextBox" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" IsReadOnlyCaretVisible="True"
          ScrollViewer.VerticalScrollBarVisibility="Auto" Width="Auto" MaxHeight="500"
                      SelectionChanged="binaryDataTextBox_SelectionChanged" TextChanged="binaryDataTextBox_TextChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />
-                    <TextBox FontFamily="consolas" x:Name="binaryDataTextBox2" TextWrapping="Wrap" AcceptsReturn="True" Visibility="Collapsed" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            <TextBox FontFamily="consolas" x:Name="binaryDataTextBox2" TextWrapping="Wrap" AcceptsReturn="True" Visibility="Collapsed" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
          ScrollViewer.VerticalScrollBarVisibility="Auto" Width="Auto" IsReadOnlyCaretVisible="True"
                      SelectionChanged="binaryDataTextBox2_SelectionChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />
-   
-            <diffplex:DiffViewer x:Name="DiffView"/>
-            <TextBlock x:Name="differencesTextBlock" FontFamily="consolas" Margin="5" />
+            <StackPanel Orientation="Horizontal">
+                <Label FontWeight="Bold">Bytes per word (slow for small words)</Label>
+                <RadioButton Name="wordlenghtselector1" GroupName="wordlenght">1</RadioButton>
+                <RadioButton Name="wordlenghtselector2" GroupName="wordlenght">2</RadioButton>
+                <RadioButton Name="wordlenghtselector4" GroupName="wordlenght">4</RadioButton>
+                <RadioButton Name="wordlenghtselector8" GroupName="wordlenght" IsChecked="True">8</RadioButton>
+            </StackPanel>
+            <StackPanel Grid.Row="2" Orientation="Vertical">
+                    <diffplex:DiffViewer x:Name="DiffView" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" Width="Auto" Height="500"/>
+                </StackPanel>
+
         </StackPanel>
 
     </Grid>

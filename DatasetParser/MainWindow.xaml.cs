@@ -250,11 +250,35 @@ namespace DatasetParser
             for (int i = 0; i < input.Length; i++)
             {
                 sb.Append(input[i]);
-
-                if ((i + 1) % 192 == 0)
+                if(wordlenghtselector1.IsChecked == true)
                 {
-                    sb.AppendLine();
+                    if ((i + 1) % 3 == 0) // single byte
+                    {
+                        sb.AppendLine();
+                    }
                 }
+                else if(wordlenghtselector2.IsChecked == true)
+                { 
+                    if ((i + 1) % 6 == 0) // dual byte
+                    {
+                        sb.AppendLine();
+                    }
+                }
+                else if(wordlenghtselector4.IsChecked == true)
+                {
+                    if ((i + 1) % 12 == 0) // quadro byte
+                    {
+                        sb.AppendLine();
+                    }
+                }
+                else if(wordlenghtselector8.IsChecked == true)
+                {
+                    if ((i + 1) % 24 == 0) // octa byte
+                    {
+                        sb.AppendLine();
+                    }
+                }
+
             }
 
             return sb.ToString();
