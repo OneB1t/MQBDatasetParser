@@ -44,7 +44,7 @@
                 <RadioButton Name="wordlenghtselector8" GroupName="wordlenght" IsChecked="True">8</RadioButton>
             </StackPanel>
             <StackPanel Grid.Row="2" Orientation="Vertical">
-                    <diffplex:DiffViewer x:Name="DiffView" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" Width="Auto" Height="500"/>
+                    <diffplex:DiffViewer x:Name="DiffView" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" Width="Auto" MaxHeight="5000"/>
                 </StackPanel>
 
         </StackPanel>

@@ -286,9 +286,12 @@ namespace DatasetParser
 
         private void compareFilesButton_Click(object sender, RoutedEventArgs e)
         {
+            DiffView.IgnoreUnchanged = true;
+            DiffView.SideBySideModeToggleTitle = true;
+            DiffView.OldTextHeader = filePathTextBlock.Text;
+            DiffView.NewTextHeader = filePathTextBlock2.Text;
             DiffView.OldText = AddLinesToResult(binaryDataTextBox.Text);
             DiffView.NewText = AddLinesToResult(binaryDataTextBox2.Text);
-            DiffView.IgnoreUnchanged = true;
         }
 
         private void saveFileButton_Click(object sender, RoutedEventArgs e)
