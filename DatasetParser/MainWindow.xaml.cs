@@ -7,6 +7,7 @@ using System.Xml;
 using Xml2CSharp;
 using System.Text;
 using System.Linq;
+using System.Data;
 
 namespace DatasetParser
 {
@@ -41,13 +42,13 @@ namespace DatasetParser
                     }
 
                     // Display the binary data in the TextBox
-                    binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ");
+                    binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ").Replace("  ", " ").ToUpperInvariant();
                     start_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.START_ADDRESS;
                     diagnostics_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.DIAGNOSTIC_ADDRESS;
                     sw_name.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_NAME;
                     sw_version.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_VERSION;
 
-                    string[] hexValuesSplit = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Split(',');
+                    string[] hexValuesSplit = binaryDataTextBox.Text.Split(' ');
                     datasetBytes = new byte[hexValuesSplit.Length];
 
 
@@ -76,7 +77,7 @@ namespace DatasetParser
         private byte [] CalculateCRC()
         {
             byte[] result = { };
-            if (datasetBytes != null)
+            if (datasetBytes != null && datasetBytes.Length > 10000)
             {
                 int newLength = datasetBytes.Length - 4;
                 byte[] dataForCRC = new byte[newLength];
@@ -85,7 +86,18 @@ namespace DatasetParser
                 CRC32 crc = new CRC32();
                 byte[] bytes = crc.ComputeHash(dataForCRC);
                 Array.Reverse(bytes, 0, bytes.Length);
-                crc32calculation.Text = BitConverter.ToString(bytes).Replace("-", " ");
+                crc32calculation.Text = "CRC32-REVERSED: " + BitConverter.ToString(bytes).Replace("-", " ");
+                result = bytes;
+            }else if (datasetBytes != null)
+            {
+                int newLength = datasetBytes.Length - 2;
+                byte[] dataForCRC = new byte[newLength];
+                Array.Copy(datasetBytes, 0, dataForCRC, 0, newLength);
+
+
+                byte[] bytes = CRC16.ComputeHash(dataForCRC);
+                Array.Reverse(bytes, 0, bytes.Length);
+                crc32calculation.Text = "CRC16/ARC-REVERSED: " + BitConverter.ToString(bytes).Replace("-", " ");
                 result = bytes;
             }
             return result;
@@ -110,7 +122,7 @@ namespace DatasetParser
                     {
                         response = serializer.Deserialize(reader) as MESSAGE;
                     }
-                    binaryDataTextBox2.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ");
+                    binaryDataTextBox2.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ").Replace("  ", " ").ToUpperInvariant();
 
                     // Set the file path text
                     filePathTextBlock2.Text = openFileDialog.SafeFileName;
@@ -241,7 +253,14 @@ namespace DatasetParser
         private void GetTrafficJamAssistEnabled()
         {
             // we need to decide where to look for it based on unit type as on older type offset is 13868
-            traffic_jam_assist_enabled.Text = "Traffic Jam assist (WIP) only new unit: " + BitConverter.ToBoolean(datasetBytes, 13748);
+            if(datasetBytes.Length > 13748) // old datasets are short...
+            {
+                traffic_jam_assist_enabled.Text = "Traffic Jam assist (WIP) only new unit: " + BitConverter.ToBoolean(datasetBytes, 13748);
+            }
+            else
+            {
+                traffic_jam_assist_enabled.Text = "Traffic Jam assist not supported for this unit";
+            }
         }
         private string AddLinesToResult(string input)
         {
@@ -297,7 +316,10 @@ namespace DatasetParser
         private void saveFileButton_Click(object sender, RoutedEventArgs e)
         {
             // replace new CRC in result
-            Array.Copy(CalculateCRC(), 0, datasetBytes, datasetBytes.Length - 4, 4);
+            if (datasetBytes != null && datasetBytes.Length > 10000)
+                Array.Copy(CalculateCRC(), 0, datasetBytes, datasetBytes.Length - 4, 4);
+            else
+                Array.Copy(CalculateCRC(), 0, datasetBytes, datasetBytes.Length - 2, 2);
             response.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text = string.Join(",", datasetBytes.Select(b => $"0x{b:X2}"));
             binaryDataTextBox.Text = response.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " "); ;
 
