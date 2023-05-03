@@ -21,18 +21,18 @@
             <StackPanel Grid.Row="1" Orientation="Vertical" >
             <TextBox FontFamily="consolas" x:Name="diagnostics_address" VerticalAlignment="Center" IsEnabled="True"/>
             <TextBox FontFamily="consolas" x:Name="start_address" VerticalAlignment="Center" IsEnabled="True"/>
-                <TextBox FontFamily="consolas" x:Name="sw_name"  VerticalAlignment="Center" IsEnabled="True"/>
-                <TextBox FontFamily="consolas" x:Name="sw_version" VerticalAlignment="Center" IsEnabled="True"/>
-                <TextBox FontFamily="consolas" x:Name="vehicle_type" VerticalAlignment="Center" IsEnabled="True"/>
-                <TextBox FontFamily="consolas" x:Name="traffic_jam_assist_enabled" VerticalAlignment="Center" IsEnabled="True"/>
-            <TextBox x:Name="crc32calculation" Margin="5,0" VerticalAlignment="Center" IsEnabled="True"/>
-                <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock"/>
-                <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock2" Visibility="Collapsed"/>
+            <TextBox FontFamily="consolas" x:Name="sw_name"  VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBox FontFamily="consolas" x:Name="sw_version" VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBox FontFamily="consolas" x:Name="vehicle_type" VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBox FontFamily="consolas" x:Name="traffic_jam_assist_enabled" VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBox FontFamily="consolas" x:Name="crc32calculation" VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock"/>
+            <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock2" Visibility="Collapsed"/>
             <Button x:Name="compareFilesButton" Content="Compare Files" Click="compareFilesButton_Click" />
 
                     <TextBox FontFamily="consolas" x:Name="binaryDataTextBox" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" IsReadOnlyCaretVisible="True"
          ScrollViewer.VerticalScrollBarVisibility="Auto" Width="Auto" MaxHeight="500"
-                     SelectionChanged="binaryDataTextBox_SelectionChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />
+                     SelectionChanged="binaryDataTextBox_SelectionChanged" TextChanged="binaryDataTextBox_TextChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />
                     <TextBox FontFamily="consolas" x:Name="binaryDataTextBox2" TextWrapping="Wrap" AcceptsReturn="True" Visibility="Collapsed" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
          ScrollViewer.VerticalScrollBarVisibility="Auto" Width="Auto" IsReadOnlyCaretVisible="True"
                      SelectionChanged="binaryDataTextBox2_SelectionChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />

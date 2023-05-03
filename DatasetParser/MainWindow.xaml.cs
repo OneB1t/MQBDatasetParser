@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using System.Xml;
 using Xml2CSharp;
 using System.Text;
+using System.Linq;
 
 namespace DatasetParser
 {
@@ -15,7 +16,9 @@ namespace DatasetParser
     public partial class MainWindow : Window
     {
         XmlDocument xmlDoc;
+        MESSAGE? response = new MESSAGE();
         byte[] datasetBytes;
+        XmlSerializer serializer = new XmlSerializer(typeof(MESSAGE));
         public MainWindow()
         {
             InitializeComponent();
@@ -30,18 +33,15 @@ namespace DatasetParser
                 {
                     // Load the XML file into an XmlDocument object
                     xmlDoc = new XmlDocument();
-                    xmlDoc.Load(openFileDialog.FileName);
-
-                    // Deserialize the XML document into a Response object using an XmlSerializer
-                    XmlSerializer serializer = new XmlSerializer(typeof(MESSAGE));
-                    MESSAGE? response;
+                    xmlDoc.Load(openFileDialog.FileName);                   
+                    
                     using (var reader = new StringReader(xmlDoc.InnerXml))
                     {
                         response = serializer.Deserialize(reader) as MESSAGE;
                     }
 
                     // Display the binary data in the TextBox
-                    binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(","," ");
+                    binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ");
                     start_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.START_ADDRESS;
                     diagnostics_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.DIAGNOSTIC_ADDRESS;
                     sw_name.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_NAME;
@@ -50,21 +50,14 @@ namespace DatasetParser
                     string[] hexValuesSplit = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Split(',');
                     datasetBytes = new byte[hexValuesSplit.Length];
 
-    
+
 
                     for (int i = 0; i < hexValuesSplit.Length; i++)
                     {
                         datasetBytes[i] = Convert.ToByte(hexValuesSplit[i], 16);
                     }
 
-                    int newLength = datasetBytes.Length - 4;
-                    byte[] dataForCRC = new byte[newLength];
-                    Array.Copy(datasetBytes, 0, dataForCRC, 0, newLength);
-
-                    CRC32 crc = new CRC32();
-                    byte[] bytes = crc.ComputeHash(dataForCRC);
-                    Array.Reverse(bytes, 0, bytes.Length);
-                    crc32calculation.Text = BitConverter.ToString(bytes).Replace("-"," ");
+                    CalculateCRC();
 
                     // Set the file path text
                     filePathTextBlock.Text = openFileDialog.SafeFileName;
@@ -78,6 +71,24 @@ namespace DatasetParser
                     MessageBox.Show("Error: " + ex.Message);
                 }
             }
+        }
+
+        private byte [] CalculateCRC()
+        {
+            byte[] result = { };
+            if (datasetBytes != null)
+            {
+                int newLength = datasetBytes.Length - 4;
+                byte[] dataForCRC = new byte[newLength];
+                Array.Copy(datasetBytes, 0, dataForCRC, 0, newLength);
+
+                CRC32 crc = new CRC32();
+                byte[] bytes = crc.ComputeHash(dataForCRC);
+                Array.Reverse(bytes, 0, bytes.Length);
+                crc32calculation.Text = BitConverter.ToString(bytes).Replace("-", " ");
+                result = bytes;
+            }
+            return result;
         }
 
         private void loadFileButton2_Click(object sender, RoutedEventArgs e)
@@ -109,6 +120,7 @@ namespace DatasetParser
                 {
                     MessageBox.Show("Error: " + ex.Message);
                 }
+                compareFilesButton_Click(sender, e);
             }
         }
 
@@ -257,12 +269,19 @@ namespace DatasetParser
 
         private void saveFileButton_Click(object sender, RoutedEventArgs e)
         {
+            // replace new CRC in result
+            Array.Copy(CalculateCRC(), 0, datasetBytes, datasetBytes.Length - 4, 4);
+            response.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text = string.Join(",", datasetBytes.Select(b => $"0x{b:X2}"));
+            binaryDataTextBox.Text = response.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text;
+            using StringWriter writer = new StringWriter();
+            serializer.Serialize(writer, response);
+
             // Create a SaveFileDialog object
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "XML Files (*.xml)|*.xml"; // Set the file type filter
             if (saveFileDialog.ShowDialog() == true) // Show the dialog and check if a file is selected
             {
-                xmlDoc.Save(saveFileDialog.FileName);
+                File.WriteAllText(saveFileDialog.FileName,writer.ToString());
             }
         }
         private void binaryDataTextBox_SelectionChanged(object sender, RoutedEventArgs e)
@@ -274,6 +293,25 @@ namespace DatasetParser
         {
             int selectedByteIndex = binaryDataTextBox2.SelectionStart / 3;
             selectedByteTextBlock2.Text = $"Selected byte index: {selectedByteIndex}";
+        }
+
+        private void binaryDataTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            string[] byteStrings = binaryDataTextBox.Text.Split(' ');
+
+            byte[] bytes = new byte[byteStrings.Length];
+            try
+            {
+                for (int i = 0; i < byteStrings.Length; i++)
+                {
+                    bytes[i] = byte.Parse(byteStrings[i], System.Globalization.NumberStyles.HexNumber);
+                }
+                datasetBytes = bytes;
+                CalculateCRC();
+            }
+            catch(Exception ex) { 
+            // do nothing for invalid data
+            }
         }
     }
 }
