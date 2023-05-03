@@ -61,7 +61,10 @@ namespace DatasetParser
                     byte[] dataForCRC = new byte[newLength];
                     Array.Copy(datasetBytes, 0, dataForCRC, 0, newLength);
 
-                    crc32calculation.Text = CRC32Reversed.Compute(dataForCRC).ToString("X");
+                    CRC32 crc = new CRC32();
+                    byte[] bytes = crc.ComputeHash(dataForCRC);
+                    Array.Reverse(bytes, 0, bytes.Length);
+                    crc32calculation.Text = BitConverter.ToString(bytes).Replace("-"," ");
 
                     // Set the file path text
                     filePathTextBlock.Text = openFileDialog.SafeFileName;

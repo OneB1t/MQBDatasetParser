@@ -1,30 +1,44 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.Intrinsics.Arm;
 
 namespace DatasetParser
 {
-    public static class CRC32Reversed
+    public class CRC32
     {
-        public static uint Compute(byte[] data)
+        private readonly uint[] ChecksumTable;
+        private readonly uint Polynomial = 0xEDB88320;
+
+        public CRC32()
         {
-            uint crc = 0xFFFFFFFF;
+            ChecksumTable = new uint[0x100];
 
-            for (int i = data.Length - 1; i >= 0; i--)
+            for (uint index = 0; index < 0x100; ++index)
             {
-                byte b = data[i];
-
-                for (int j = 0; j < 8; j++)
-                {
-                    bool bit = ((crc & 0x80000000) != 0) ^ ((b & 0x80) != 0);
-                    crc <<= 1;
-                    if (bit)
-                    {
-                        crc ^= 0x04C11DB7;
-                    }
-                    b <<= 1;
-                }
+                uint item = index;
+                for (int bit = 0; bit < 8; ++bit)
+                    item = ((item & 1) != 0) ? (Polynomial ^ (item >> 1)) : (item >> 1);
+                ChecksumTable[index] = item;
             }
+        }
 
-            return crc ^ 0xFFFFFFFF;
+        public byte[] ComputeHash(Stream stream)
+        {
+            uint result = 0xFFFFFFFF;
+
+            int current;
+            while ((current = stream.ReadByte()) != -1)
+                result = ChecksumTable[(result & 0xFF) ^ (byte)current] ^ (result >> 8);
+
+            byte[] hash = BitConverter.GetBytes(~result);
+            Array.Reverse(hash);
+            return hash;
+        }
+
+        public byte[] ComputeHash(byte[] data)
+        {
+            using (MemoryStream stream = new MemoryStream(data))
+                return ComputeHash(stream);
         }
     }
 }
