@@ -272,18 +272,30 @@ namespace DatasetParser
             // replace new CRC in result
             Array.Copy(CalculateCRC(), 0, datasetBytes, datasetBytes.Length - 4, 4);
             response.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text = string.Join(",", datasetBytes.Select(b => $"0x{b:X2}"));
-            binaryDataTextBox.Text = response.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text;
-            using StringWriter writer = new StringWriter();
-            serializer.Serialize(writer, response);
+            binaryDataTextBox.Text = response.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " "); ;
 
             // Create a SaveFileDialog object
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "XML Files (*.xml)|*.xml"; // Set the file type filter
             if (saveFileDialog.ShowDialog() == true) // Show the dialog and check if a file is selected
             {
-                File.WriteAllText(saveFileDialog.FileName,writer.ToString());
+                WriteResponseToXml(response, saveFileDialog.FileName);
             }
         }
+        private void WriteResponseToXml(MESSAGE? response, string filename)
+        {
+            var settings = new XmlWriterSettings
+            {
+                Indent = true,
+                IndentChars = "\t"
+            };
+
+            using (var writer = XmlWriter.Create(filename, settings))
+            {
+                serializer.Serialize(writer, response);
+            }
+        }
+
         private void binaryDataTextBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             int selectedByteIndex = binaryDataTextBox.SelectionStart / 3;
