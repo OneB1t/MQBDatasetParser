@@ -4,10 +4,13 @@ using System.IO;
 using System.Windows;
 using System.Xml.Serialization;
 using System.Xml;
-using Xml2CSharp;
+using DatasetXml;
 using System.Text;
 using System.Linq;
 using System.Data;
+using DatasetXmlGerman;
+using System.Text.RegularExpressions;
+using System.Buffers.Binary;
 
 namespace DatasetParser
 {
@@ -18,8 +21,10 @@ namespace DatasetParser
     {
         XmlDocument xmlDoc;
         MESSAGE? response = new MESSAGE();
+        SWCNT? germanResponse = new SWCNT();
         byte[] datasetBytes;
         XmlSerializer serializer = new XmlSerializer(typeof(MESSAGE));
+        XmlSerializer germanXmlForSpecificUnitSerializer = new XmlSerializer(typeof(SWCNT));
         public MainWindow()
         {
             InitializeComponent();
@@ -32,21 +37,27 @@ namespace DatasetParser
             {
                 try
                 {
-                    // Load the XML file into an XmlDocument object
-                    xmlDoc = new XmlDocument();
-                    xmlDoc.Load(openFileDialog.FileName);                   
-                    
-                    using (var reader = new StringReader(xmlDoc.InnerXml))
-                    {
-                        response = serializer.Deserialize(reader) as MESSAGE;
-                    }
+                    LoadXmlFileToObject(openFileDialog);
 
-                    // Display the binary data in the TextBox
-                    binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ").Replace("  ", " ").ToUpperInvariant();
-                    start_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.START_ADDRESS;
-                    diagnostics_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.DIAGNOSTIC_ADDRESS;
-                    sw_name.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_NAME;
-                    sw_version.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_VERSION;
+                    if(response?.RESULT != null)
+                    { 
+                        // Display the binary data in the TextBox
+                        binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ").Replace("  ", " ").ToUpperInvariant();
+                        start_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.START_ADDRESS;
+                        diagnostics_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.DIAGNOSTIC_ADDRESS;
+                        sw_name.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_NAME;
+                        sw_version.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_VERSION;
+
+                    }
+                    else if(germanResponse?.IDENT != null) // this is for 6D datasets
+                    {
+                        string text = Regex.Replace(germanResponse?.DATENBEREICHE.DATENBEREICH.DATEN, ".{2}", "$0 ");
+                        binaryDataTextBox.Text = text.Substring(0, text.Length - 1); // cut last characters
+                        start_address.Text = germanResponse?.DATENBEREICHE.DATENBEREICH.STARTADR;
+                        diagnostics_address.Text = germanResponse?.IDENT.CNTDATEI;
+                        sw_name.Text = germanResponse?.DATENBEREICHE.DATENBEREICH.DATENNAME;
+                        sw_version.Text = germanResponse?.IDENT.CNTVERSIONINHALT;
+                    }
 
                     string[] hexValuesSplit = binaryDataTextBox.Text.Split(' ');
                     datasetBytes = new byte[hexValuesSplit.Length];
@@ -62,14 +73,43 @@ namespace DatasetParser
 
                     // Set the file path text
                     filePathTextBlock.Text = openFileDialog.SafeFileName;
-
-                    // here parse data from dataset into fields
                     GetVehicleType();
-                    GetTrafficJamAssistEnabled();
+                    if (diagnostics_address.Equals("A5"))
+                    { 
+                        // here parse data from dataset into fields
+                        GetTrafficJamAssistEnabled();
+                    }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error: " + ex.Message);
+                }
+                if (!String.IsNullOrEmpty(binaryDataTextBox2.Text))
+                    compareFilesButton_Click(sender, e);
+            }
+        }
+
+        private void LoadXmlFileToObject(OpenFileDialog openFileDialog)
+        {
+            // Load the XML file into an XmlDocument object
+            xmlDoc = new XmlDocument();
+            xmlDoc.Load(openFileDialog.FileName);
+            try
+            {
+                using (var reader = new StringReader(xmlDoc.InnerXml))
+                {
+                    response = serializer.Deserialize(reader) as MESSAGE;
+                }
+            }
+            catch(Exception e) {
+
+            }
+            if(response?.RESULT == null) // if we failed to parse it try german version of xml
+            { 
+                using (var reader = new StringReader(xmlDoc.InnerXml))
+                {
+                    SWCNT? sWCNT = germanXmlForSpecificUnitSerializer.Deserialize(reader) as SWCNT;
+                    germanResponse = sWCNT;
                 }
             }
         }
@@ -77,29 +117,57 @@ namespace DatasetParser
         private byte [] CalculateCRC()
         {
             byte[] result = { };
-            if (datasetBytes != null && datasetBytes.Length > 10000)
+            if (datasetBytes == null)
+                return result;
+            if(diagnostics_address.Text.Contains("6D"))
             {
-                int newLength = datasetBytes.Length - 4;
-                byte[] dataForCRC = new byte[newLength];
-                Array.Copy(datasetBytes, 0, dataForCRC, 0, newLength);
+                result = calculateCRC32(false);
+            }
+            else if (datasetBytes.Length > 10000 )
+            {
+                result = calculateCRC32(true);
+            }
+            else
+            {
+                result = calculateCRC16();
+            }
+            return result;
+        }
 
-                CRC32 crc = new CRC32();
-                byte[] bytes = crc.ComputeHash(dataForCRC);
+        private byte[] calculateCRC16()
+        {
+            byte[] result;
+            int newLength = datasetBytes.Length - 2;
+            byte[] dataForCRC = new byte[newLength];
+            Array.Copy(datasetBytes, 0, dataForCRC, 0, newLength);
+
+
+            byte[] bytes = CRC16.ComputeHash(dataForCRC);
+            Array.Reverse(bytes, 0, bytes.Length);
+            crc32calculation.Text = "CRC16/ARC-REVERSED: " + BitConverter.ToString(bytes).Replace("-", " ");
+            result = bytes;
+            return result;
+        }
+
+        private byte[] calculateCRC32(Boolean reverse)
+        {
+            byte[] result;
+            int newLength = datasetBytes.Length - 4;
+            byte[] dataForCRC = new byte[newLength];
+            Array.Copy(datasetBytes, 0, dataForCRC, 0, newLength);
+
+            CRC32 crc = new CRC32();
+            byte[] bytes = crc.ComputeHash(dataForCRC);
+            if(reverse)
+            { 
                 Array.Reverse(bytes, 0, bytes.Length);
                 crc32calculation.Text = "CRC32-REVERSED: " + BitConverter.ToString(bytes).Replace("-", " ");
-                result = bytes;
-            }else if (datasetBytes != null)
-            {
-                int newLength = datasetBytes.Length - 2;
-                byte[] dataForCRC = new byte[newLength];
-                Array.Copy(datasetBytes, 0, dataForCRC, 0, newLength);
-
-
-                byte[] bytes = CRC16.ComputeHash(dataForCRC);
-                Array.Reverse(bytes, 0, bytes.Length);
-                crc32calculation.Text = "CRC16/ARC-REVERSED: " + BitConverter.ToString(bytes).Replace("-", " ");
-                result = bytes;
             }
+            else
+            { 
+                crc32calculation.Text = "CRC32: " + BitConverter.ToString(bytes).Replace("-", " ");
+            }
+            result = bytes;
             return result;
         }
 
@@ -108,38 +176,61 @@ namespace DatasetParser
             var openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "XML Files (*.xml)|*.xml";
             if (openFileDialog.ShowDialog() == true)
-            {
+            { 
                 try
                 {
-                    // Load the XML file into an XmlDocument object
-                    XmlDocument xmlDoc = new XmlDocument();
-                    xmlDoc.Load(openFileDialog.FileName);
+                    LoadXmlFileToObject(openFileDialog);
 
-                    // Deserialize the XML document into a Response object using an XmlSerializer
-                    XmlSerializer serializer = new XmlSerializer(typeof(MESSAGE));
-                    MESSAGE? response;
-                    using (var reader = new StringReader(xmlDoc.InnerXml))
+                    if (response?.RESULT != null)
                     {
-                        response = serializer.Deserialize(reader) as MESSAGE;
+                        // Display the binary data in the TextBox
+                        binaryDataTextBox2.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ").Replace("  ", " ").ToUpperInvariant();
+
+
                     }
-                    binaryDataTextBox2.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ").Replace("  ", " ").ToUpperInvariant();
+                    else if (germanResponse?.IDENT != null) // this is for 6D datasets
+                    {
+                        string text = Regex.Replace(germanResponse?.DATENBEREICHE.DATENBEREICH.DATEN, ".{2}", "$0 ");
+                        binaryDataTextBox2.Text = text.Substring(0, text.Length - 1); // cut last characters
+                    }
 
-                    // Set the file path text
+
+                    string[] hexValuesSplit = binaryDataTextBox2?.Text?.Split(' ');
+                    datasetBytes = new byte[hexValuesSplit.Length];
+
+
+
+                    for (int i = 0; i < hexValuesSplit.Length; i++)
+                    {
+                        datasetBytes[i] = Convert.ToByte(hexValuesSplit[i], 16);
+                    }
+
                     filePathTextBlock2.Text = openFileDialog.SafeFileName;
-
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error: " + ex.Message);
                 }
-                compareFilesButton_Click(sender, e);
+                if(!String.IsNullOrEmpty(binaryDataTextBox.Text))
+                    compareFilesButton_Click(sender, e);
             }
         }
 
         private string GetVehicleType()
         {
+            string result = "";
             short shortValue = BitConverter.ToInt16(datasetBytes, 0);
-            switch(shortValue)
+            short reversedValue = BinaryPrimitives.ReverseEndianness(shortValue);
+            result = GetResult(shortValue);
+            if (result == "NO IDEA")
+                return GetResult(reversedValue);
+            else
+                return result;
+        }
+
+        private string GetResult(short shortValue)
+        {
+            switch (shortValue)
             {
                 case 12593:
                     vehicle_type.Text = "Passat Limo GTE";
@@ -210,6 +301,9 @@ namespace DatasetParser
                 case 12598:
                     vehicle_type.Text = "Škoda Superb Combi";
                     break;
+                case 12338:
+                    vehicle_type.Text = "Škoda Superb Combi";
+                    break;
                 case 12342:
                     vehicle_type.Text = "Škoda Superb Limo";
                     break;
@@ -250,6 +344,7 @@ namespace DatasetParser
 
             return "NO IDEA";
         }
+
         private void GetTrafficJamAssistEnabled()
         {
             // we need to decide where to look for it based on unit type as on older type offset is 13868
@@ -305,7 +400,7 @@ namespace DatasetParser
 
         private void compareFilesButton_Click(object sender, RoutedEventArgs e)
         {
-            DiffView.IgnoreUnchanged = true;
+            //DiffView.IgnoreUnchanged = true;
             DiffView.SideBySideModeToggleTitle = true;
             DiffView.OldTextHeader = filePathTextBlock.Text;
             DiffView.NewTextHeader = filePathTextBlock2.Text;
@@ -345,10 +440,47 @@ namespace DatasetParser
             }
         }
 
+        public static string EndianFromString(string input)
+        {
+            ulong littleEndianResult = 0;
+            string binaryValue = "";
+            try
+            {
+                // Remove any leading/trailing whitespace from the input string
+                input = input.Trim();
+
+                // Split the input string into individual hexadecimal values
+                string[] hexValues = input.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                byte[] bytes = new byte[hexValues.Length];
+                for (int i = 0; i < hexValues.Length; i++)
+                {
+                    bytes[i] = Convert.ToByte(hexValues[i], 16);
+                }
+
+
+
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    littleEndianResult += ((ulong)bytes[i] << (i * 8));
+                    string binaryString = Convert.ToString(bytes[i], 2).PadLeft(8, '0'); // convert to binary string and pad to 8 characters
+                    binaryValue += binaryString;
+                }
+
+                byte[] bigEndianBytes = BitConverter.GetBytes(littleEndianResult);
+                Array.Reverse(bigEndianBytes);
+                ulong bigEndianResult = BitConverter.ToUInt16(bigEndianBytes, 0);
+                return "LITTLE-ENDIAN DECIMAL: " + littleEndianResult.ToString() + "\nBINARY Value: " + binaryValue.ToString();
+            }
+            catch { }
+            return "";
+        }
+
         private void binaryDataTextBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             int selectedByteIndex = binaryDataTextBox.SelectionStart / 3;
             selectedByteTextBlock.Text = $"Selected byte index: {selectedByteIndex}";
+            littleEndianValue.Text = EndianFromString(binaryDataTextBox.Text.Substring(binaryDataTextBox.SelectionStart, binaryDataTextBox.SelectionLength));
         }
         private void binaryDataTextBox2_SelectionChanged(object sender, RoutedEventArgs e)
         {

@@ -6,7 +6,7 @@
 using System;
 using System.Xml.Serialization;
 using System.Collections.Generic;
-namespace Xml2CSharp
+namespace DatasetXml
 {
     [XmlRoot(ElementName = "PARAMETER_DATA")]
     public class PARAMETER_DATA

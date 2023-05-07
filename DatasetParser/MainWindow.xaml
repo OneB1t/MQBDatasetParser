@@ -29,10 +29,13 @@
             <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock"/>
             <TextBlock FontFamily="consolas" x:Name="selectedByteTextBlock2" Visibility="Collapsed"/>
             <Button x:Name="compareFilesButton" Content="Compare Files" Click="compareFilesButton_Click" />
+            <StackPanel Orientation="Horizontal">
+                <TextBox FontFamily="consolas" x:Name="littleEndianValue" MaxHeight="500" TextWrapping="Wrap" Width="200" MaxWidth="200" ></TextBox>
 
-                    <TextBox FontFamily="consolas" x:Name="binaryDataTextBox" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" IsReadOnlyCaretVisible="True"
-         ScrollViewer.VerticalScrollBarVisibility="Auto" Width="Auto" MaxHeight="500"
+                <TextBox FontFamily="consolas" x:Name="binaryDataTextBox" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" IsReadOnlyCaretVisible="True"
+         ScrollViewer.VerticalScrollBarVisibility="Auto" Width="800px" MaxHeight="500"
                      SelectionChanged="binaryDataTextBox_SelectionChanged" TextChanged="binaryDataTextBox_TextChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />
+            </StackPanel>
             <TextBox FontFamily="consolas" x:Name="binaryDataTextBox2" TextWrapping="Wrap" AcceptsReturn="True" Visibility="Collapsed" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
          ScrollViewer.VerticalScrollBarVisibility="Auto" Width="Auto" IsReadOnlyCaretVisible="True"
                      SelectionChanged="binaryDataTextBox2_SelectionChanged" IsReadOnly="false" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" />
