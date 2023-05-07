@@ -23,6 +23,7 @@
             <TextBox FontFamily="consolas" x:Name="start_address" VerticalAlignment="Center" IsEnabled="True"/>
             <TextBox FontFamily="consolas" x:Name="sw_name"  VerticalAlignment="Center" IsEnabled="True"/>
             <TextBox FontFamily="consolas" x:Name="sw_version" VerticalAlignment="Center" IsEnabled="True"/>
+            <TextBox FontFamily="consolas" x:Name="dataset_version" VerticalAlignment="Center" IsEnabled="True"/>
             <TextBox FontFamily="consolas" x:Name="vehicle_type" VerticalAlignment="Center" IsEnabled="True"/>
             <TextBox FontFamily="consolas" x:Name="traffic_jam_assist_enabled" VerticalAlignment="Center" IsEnabled="True"/>
             <TextBox FontFamily="consolas" x:Name="crc32calculation" VerticalAlignment="Center" IsEnabled="True"/>

@@ -73,6 +73,7 @@ namespace DatasetParser
 
                     // Set the file path text
                     filePathTextBlock.Text = openFileDialog.SafeFileName;
+                    GetDatasetVersion();
                     GetVehicleType();
                     if (diagnostics_address.Equals("A5"))
                     { 
@@ -87,6 +88,13 @@ namespace DatasetParser
                 if (!String.IsNullOrEmpty(binaryDataTextBox2.Text))
                     compareFilesButton_Click(sender, e);
             }
+        }
+
+        private void GetDatasetVersion()
+        {
+            byte majorVersion = datasetBytes[2];
+            byte minorVersion = datasetBytes[3];
+            dataset_version.Text = "Dataset version: " + "Major - " + Convert.ToByte(majorVersion).ToString("x2") + " Minor - " + Convert.ToByte(minorVersion).ToString("x2");
         }
 
         private void LoadXmlFileToObject(OpenFileDialog openFileDialog)
