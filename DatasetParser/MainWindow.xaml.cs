@@ -45,7 +45,11 @@ namespace DatasetParser
                     if(response?.RESULT != null)
                     { 
                         // Display the binary data in the TextBox
-                        binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ").Replace("  ", " ").ToUpperInvariant();
+                        binaryDataTextBox.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("\n","").Replace("0x", "").Replace(",", " ").ToUpperInvariant();
+                        binaryDataTextBox.Text = Regex.Replace(binaryDataTextBox.Text, @"\s+", " ");
+                        if (binaryDataTextBox.Text.Substring(0, 1) == " ")
+                            binaryDataTextBox.Text = binaryDataTextBox.Text.Remove(0, 1);
+
                         start_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.START_ADDRESS;
                         diagnostics_address.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.DIAGNOSTIC_ADDRESS;
                         sw_name.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.ZDC_NAME;
@@ -61,8 +65,15 @@ namespace DatasetParser
                         sw_name.Text = germanResponse?.DATENBEREICHE.DATENBEREICH.DATENNAME;
                         sw_version.Text = germanResponse?.IDENT.CNTVERSIONINHALT;
                     }
+                    string[] hexValuesSplit = binaryDataTextBox.Text
+                        .Replace("\\n", "")
+                        .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .ToArray();
 
-                    string[] hexValuesSplit = binaryDataTextBox.Text.Split(' ');
+
+
                     datasetBytes = new byte[hexValuesSplit.Length];
 
 
@@ -201,7 +212,11 @@ namespace DatasetParser
                     if (response?.RESULT != null)
                     {
                         // Display the binary data in the TextBox
-                        binaryDataTextBox2.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("0x", "").Replace(",", " ").Replace("  ", " ").ToUpperInvariant();
+                        // Display the binary data in the TextBox
+                        binaryDataTextBox2.Text = response?.RESULT.RESPONSE.DATA.PARAMETER_DATA.Text.Replace("\n", "").Replace("0x", "").Replace(",", " ").ToUpperInvariant();
+                        binaryDataTextBox2.Text = Regex.Replace(binaryDataTextBox2.Text, @"\s+", " ");
+                        if (binaryDataTextBox2.Text.Substring(0, 1) == " ")
+                            binaryDataTextBox2.Text = binaryDataTextBox2.Text.Remove(0, 1);
 
 
                     }
@@ -212,7 +227,12 @@ namespace DatasetParser
                     }
 
 
-                    string[] hexValuesSplit = binaryDataTextBox2?.Text?.Split(' ');
+                    string[] hexValuesSplit = binaryDataTextBox2.Text
+                        .Replace("\\n", "")
+                        .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .ToArray();
                     datasetBytes = new byte[hexValuesSplit.Length];
 
 
@@ -353,6 +373,9 @@ namespace DatasetParser
                     break;
                 case 16945:
                     vehicle_type.Text = "VW Golf Sportsvan";
+                    break;
+                case 12853:
+                    vehicle_type.Text = "Audi TT";
                     break;
                 default:
                     vehicle_type.Text = "NO IDEA";
