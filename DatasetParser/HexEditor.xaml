@@ -8,9 +8,300 @@
         mc:Ignorable="d"
         Title="HexEditor" Height="450" Width="800">
     <Grid>
-        <control:HexEditor x:Name="HexEdit"/>
-        <control:HexEditor Width="NaN" Height="NaN"/>
-        <control:HexEditor Width="Auto" Height="Auto"/>
-        <control:HexEditor FileName="{Binding FileNamePath}" Width="Auto" Height="Auto"/>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="Edit">
+                    <MenuItem
+                        x:Name="UndoMenu"
+                        Click="UndoMenu_Click"
+                        Header="Undo" />
+                    <MenuItem
+                        x:Name="RedoMenu"
+                        Click="RedoMenu_Click"
+                        Header="Redo" />
+                    <Separator />
+                    <MenuItem
+                        x:Name="FindMenu"
+                        Click="FindMenu_Click"
+                        Header="Find..." />
+                    <MenuItem
+                        x:Name="ReplaceMenu"
+                        Click="ReplaceMenu_Click"
+                        Header="Find and replace..." />
+                    <MenuItem
+                        x:Name="FindAllSelection"
+                        Click="FindAllSelection_Click"
+                        Header="Find all occurence of selection" />
+                    <Separator />
+                    <MenuItem
+                        x:Name="ReverseSelection"
+                        Click="ReverseSelection_Click"
+                        Header="Reverse selection" />
+                    <Separator />
+                    <MenuItem
+                        x:Name="SetReadOnlyMenu"
+                        Click="SetReadOnlyMenu_Click"
+                        Header="Read only"
+                        IsCheckable="True" />
+                    <Separator />
+                    <MenuItem
+                        x:Name="CopyHexaMenu"
+                        Click="CopyHexaMenu_Click"
+                        Header="Copy hexadecimal string" />
+                    <MenuItem
+                        x:Name="CopyStringMenu"
+                        Click="CopyStringMenu_Click"
+                        Header="Copy ASCII string" />
+                    <MenuItem
+                        x:Name="DeleteSelectionMenu"
+                        Click="DeleteSelectionMenu_Click"
+                        Header="Delete selection" />
+                    <Separator />
+                    <MenuItem
+                        x:Name="SelectAllButton"
+                        Click="SelectAllButton_Click"
+                        Header="Select all" />
+                    <Separator />
+                    <MenuItem Header="Bookmarks">
+                        <MenuItem
+                            x:Name="SetBookMarkButton"
+                            Click="SetBookMarkButton_Click"
+                            Header="Set position as bookmark" />
+                        <MenuItem
+                            x:Name="DeleteBookmark"
+                            Click="DeleteBookmark_Click"
+                            Header="Remove all bookmarks" />
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Character table">
+                        <MenuItem
+                            x:Name="CTableAsciiButton"
+                            Click="CTableASCIIButton_Click"
+                            Header="ASCII"
+                            IsCheckable="True" />
+                        <MenuItem
+                            x:Name="CTableTblButton"
+                            Click="CTableTBLButton_Click"
+                            Header="Load TBL file" />
+                        <MenuItem
+                            x:Name="CTableTblDefaultEbcdicButton"
+                            Click="CTableTblDefaultEBCDICButton_Click"
+                            Header="Load Build-in TBL : EBCDIC with special character" />
+                        <MenuItem
+                            x:Name="CTableTblDefaultEbcdicnoSpButton"
+                            Click="CTableTblDefaultEBCDICNoSPButton_Click"
+                            Header="Load Build-in TBL : EBCDIC no special character" />
+                        <MenuItem
+                            x:Name="CTableTblDefaultAsciiButton"
+                            Click="CTableTBLDefaultASCIIButton_Click"
+                            Header="Load Build-in TBL : ASCII" />
+                    </MenuItem>
+                </MenuItem>
+                <MenuItem x:Name="PositionMenu" Header="Position">
+                    <StackPanel Margin="0" Orientation="Horizontal">
+                        <Label Width="100" Content="BytePerline" />
+                        <TextBox
+                            Width="96"
+                            VerticalContentAlignment="Center"
+                            Text="{Binding BytePerLine, ElementName=HexEdit, UpdateSourceTrigger=LostFocus}"
+                            TextWrapping="Wrap" />
+                        <Label Content="(Lost focus)" />
+                    </StackPanel>
+                    <Separator />
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="100" Content="ByteShitLeft" />
+                        <control:HexBox
+                            x:Name="HbBsl"
+                            Width="96"
+                            Height="22"
+                            ToolTip="ByteShiftLeft test" />
+                        <Separator />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="100" Content="SetPosition" />
+                        <TextBox
+                            x:Name="PositionText"
+                            Width="75"
+                            VerticalContentAlignment="Center"
+                            TextChanged="PositionText_TextChanged" />
+                        <Button
+                            x:Name="GoPositionButton"
+                            Click="GOPosition_Click"
+                            Content="GO"
+                            IsEnabled="False" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="100" Content="SetPosition" />
+                        <control:HexBox
+                            x:Name="HbSetPosition"
+                            Width="96"
+                            Height="22" />
+                    </StackPanel>
+                </MenuItem>
+                <MenuItem x:Name="OptionMenu" Header="Options">
+                    <MenuItem
+                        Header="Allow context menu"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowContextMenu, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Show byte ToolTip"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=ShowByteToolTip, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Auto highlight bytes same as the selected byte"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowAutoHighLightSelectionByte, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Auto select all same byte of SelectionStart in rage at double click"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowAutoSelectSameByteAtDoubleClick, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Allow context menu"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowContextMenu, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Count the number of the selected byte"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowByteCount, UpdateSourceTrigger=PropertyChanged}" />
+                    <Separator />
+                    <MenuItem
+                        Header="File dropping need confirmation"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=FileDroppingConfirmation, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Allow text dropping"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowTextDrop, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Allow file dropping"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowFileDrop, UpdateSourceTrigger=PropertyChanged}" />
+                    <Separator />
+                    <MenuItem
+                        Header="Hide byte are deleted"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=HideByteDeleted, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Allow the possibility to delete byte"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowDeleteByte, UpdateSourceTrigger=PropertyChanged}" />
+                    <Separator />
+                    <MenuItem
+                        Header="Expend need confirmation"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AppendNeedConfirmation, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Allow expend at end of file"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowExtend, UpdateSourceTrigger=PropertyChanged}" />
+                    <Separator />
+                    <MenuItem
+                        Header="Allow drop over control"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowDrop, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Allow file drop"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowFileDrop, UpdateSourceTrigger=PropertyChanged}" />
+                    <MenuItem
+                        Header="Allow text drop"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowTextDrop, UpdateSourceTrigger=PropertyChanged}" />
+                    <Separator />
+                    <MenuItem
+                        Header="Allow zoom"
+                        IsCheckable="True"
+                        IsChecked="{Binding ElementName=HexEdit, Path=AllowZoom, UpdateSourceTrigger=PropertyChanged}" />
+                    <Slider
+                        x:Name="ZoomSlider"
+                        Width="225"
+                        LargeChange="0.1"
+                        Maximum="2"
+                        Minimum="0.5"
+                        ToolTip="Zoom editor (50% to 200%)"
+                        Value="{Binding ElementName=HexEdit, Path=ZoomScale}" />
+                </MenuItem>
+            </Menu>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TabControl
+                    x:Name="FileTab"
+                    Grid.Row="0"
+                    Margin="2,0"
+                    SelectionChanged="FileTab_SelectionChanged">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border
+                                            Name="Border"
+                                            Margin="2,0"
+                                            BorderBrush="Gainsboro"
+                                            BorderThickness="1,1,1,0"
+                                            CornerRadius="4,4,0,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Image
+                                                    Width="20"
+                                                    Height="16"
+                                                    MouseUp="Image_MouseUp"
+                                                    Opacity="0.5"
+                                                    Source="./Resources/Icon/Close-Icon.ico"
+                                                    ToolTip="Close" />
+                                                <ContentPresenter
+                                                    x:Name="ContentSite"
+                                                    Margin="10,2"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    ContentSource="Header" />
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="LightSkyBlue" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="False">
+                                                <Setter TargetName="Border" Property="Background" Value="GhostWhite" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+                </TabControl>
+
+                <control:HexEditor
+                    x:Name="HexEdit"
+                    Grid.Row="1"
+                    FileName="{Binding FileNamePath}"
+                    Margin="2"
+                    AllowByteCount="False"
+                    AllowCustomBackgroundBlock="True"
+                    ShowByteToolTip="True"
+                    AllowDrop="True"
+                    AllowExtend="False"
+                    AppendNeedConfirmation="True"
+                    BorderThickness="1"
+                    ByteGrouping="FourByte"
+                    ByteShiftLeft="{Binding LongValue, ElementName=HbBsl, UpdateSourceTrigger=PropertyChanged}"
+                    ByteSpacerPositioning="HexBytePanel"
+                    ByteSpacerVisualStyle="Dash"
+                    ByteSpacerWidthTickness="Normal"
+                    DataStringVisual="Hexadecimal"
+                    DefaultCopyToClipboardMode="HexaString"
+                    ForegroundSecondColor="Blue"
+                    OffSetStringVisual="Hexadecimal"
+                    PreloadByteInEditorMode="MaxScreenVisibleLineAtDataLoad"
+                    VisualCaretMode="Overwrite" />
+
+            </Grid>
+
+        </DockPanel>
     </Grid>
 </Window>
