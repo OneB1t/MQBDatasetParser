@@ -1,6 +1,5 @@
 ﻿<Application x:Class="DatasetParser.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:control="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:DatasetParser"
              StartupUri="MainWindow.xaml">
