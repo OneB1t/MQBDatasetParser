@@ -1,0 +1,16 @@
+﻿<Window x:Class="DatasetParser.HexEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:control="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
+        xmlns:local="clr-namespace:DatasetParser"
+        mc:Ignorable="d"
+        Title="HexEditor" Height="450" Width="800">
+    <Grid>
+        <control:HexEditor x:Name="HexEdit"/>
+        <control:HexEditor Width="NaN" Height="NaN"/>
+        <control:HexEditor Width="Auto" Height="Auto"/>
+        <control:HexEditor FileName="{Binding FileNamePath}" Width="Auto" Height="Auto"/>
+    </Grid>
+</Window>

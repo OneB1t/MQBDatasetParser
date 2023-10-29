@@ -11,6 +11,8 @@ using System.Data;
 using DatasetXmlGerman;
 using System.Text.RegularExpressions;
 using System.Buffers.Binary;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Window = System.Windows.Window;
 
 namespace DatasetParser
 {
@@ -23,6 +25,7 @@ namespace DatasetParser
         MESSAGE? response = new MESSAGE();
         SWCNT? germanResponse = new SWCNT();
         byte[] datasetBytes;
+        string tempFilePath;
         XmlSerializer serializer = new XmlSerializer(typeof(MESSAGE));
         XmlSerializer germanXmlForSpecificUnitSerializer = new XmlSerializer(typeof(SWCNT));
         public MainWindow()
@@ -68,6 +71,12 @@ namespace DatasetParser
                     {
                         datasetBytes[i] = Convert.ToByte(hexValuesSplit[i], 16);
                     }
+
+                    // Create a temporary file
+                    tempFilePath = Path.GetTempFileName();
+
+                    // Write the byte[] data to the temporary file
+                    File.WriteAllBytes(tempFilePath, datasetBytes);
 
                     CalculateCRC();
 
@@ -513,6 +522,13 @@ namespace DatasetParser
             catch(Exception ex) { 
             // do nothing for invalid data
             }
+        }
+
+        private void openHexEditor_Click(object sender, RoutedEventArgs e)
+        {
+            HexEditor win2 = new HexEditor(tempFilePath);
+            
+            win2.Show();
         }
     }
 }
